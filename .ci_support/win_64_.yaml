@@ -9,7 +9,7 @@ channel_targets:
 cxx_compiler:
 - vs2022
 libxml2_devel:
-- '2.14'
+- '2.15'
 spirv_tools:
 - '2026'
 target_platform:

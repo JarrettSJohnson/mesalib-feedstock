@@ -1,7 +1,7 @@
 schema_version: 1
 
 context:
-  version: "26.1.6"
+  version: "26.2.0"
 
 recipe:
   name: mesalib
@@ -9,12 +9,11 @@ recipe:
 
 source:
   url: https://archive.mesa3d.org/mesa-${{ version }}.tar.xz
-  sha256: 5296b88a0f1e012e2cb9ada150a2bbadf728ca81e5a4fb2ab43c83a4d2158606
+  sha256: efd4bb08cdb7c365a812cd4e6c9202ab55b2f22cdcd13c7d6c4f9647b799a4ef
   patches:
     - if: win
       then:
         - patches/0001-Add-inteljitevents-module.patch
-        - patches/0002-nir-mark-assert-only-variable.patch
 
 build:
   number: 0
@@ -98,7 +97,7 @@ outputs:
       version: ${{ version }}
     build:
       skip:
-        - not osx
+        - not (osx and arm64)
       script: build_kosmickrisp
     requirements:
       build:
@@ -128,12 +127,7 @@ outputs:
         - ${{ pin_subpackage('mesa-kosmickrisp', upper_bound='x.x') }}
     tests:
       - script:
-          - if: x86_64
-            then:
-              - test -f $PREFIX/share/vulkan/icd.d/kosmickrisp_mesa_icd.x86_64.json
-          - if: arm64
-            then:
-              - test -f $PREFIX/share/vulkan/icd.d/kosmickrisp_mesa_icd.aarch64.json
+          - test -f $PREFIX/share/vulkan/icd.d/kosmickrisp_mesa_icd.aarch64.json
 
   - package:
       name: mesa-llvmpipe
@@ -215,7 +209,8 @@ outputs:
         - if: not osx
           then:
             - ${{ pin_subpackage('mesa-llvmpipe', exact=True) }}
-          else:
+        - if: osx and arm64
+          then:
             - ${{ pin_subpackage('mesa-kosmickrisp', exact=True) }}
       run_exports:
         - ${{ pin_subpackage('mesalib', upper_bound='x.x') }}
@@ -237,9 +232,6 @@ outputs:
             then:
               - test -f $PREFIX/lib/libEGL_mesa${SHLIB_EXT}
               - test -f $PREFIX/lib/libgallium-*${SHLIB_EXT}
-          - if: osx and x86_64
-            then:
-              - test -f $PREFIX/share/vulkan/icd.d/kosmickrisp_mesa_icd.x86_64.json
           - if: osx and arm64
             then:
               - test -f $PREFIX/share/vulkan/icd.d/kosmickrisp_mesa_icd.aarch64.json
